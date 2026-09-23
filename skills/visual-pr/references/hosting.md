@@ -2,34 +2,15 @@
 
 There's no API for the drag-and-drop upload GitHub's web editor uses (`user-attachments`). An agent has to host the media in git and link it by URL.
 
-## Default for a PR you're opening: commit it on the PR branch, link it by commit SHA
+## Where the media goes, in order
 
-(Updating an existing PR's description, or a PR from a fork? Skip to the orphan media branch below. Never add commits to a branch just to host images.)
+1. **The repo's own instructions win.** Check `AGENTS.md`, `CLAUDE.md` and `CONTRIBUTING.md` for a media rule (a branch name, a folder, "no binaries in the repo") and follow it exactly.
+2. **An existing convention comes next.** If PRs in this repo already commit screenshots on the PR branch (`git log --all --oneline -- '*.png' '*.gif' | head`, or a folder like `docs/screenshots/`), do the same, in its own commit ("Add <feature> comparison media").
+3. **Otherwise, use an orphan `pr-media` branch.** It never merges, so no binaries reach `main`. It works for forks and for PRs you didn't write, and it adds nothing to the PR's own history. This is the default.
 
-1. Put the files under the repo's existing media convention. Check first (`git ls-files | grep -iE '\.(png|gif)$' | head`). If there isn't one, use `docs/screenshots/<feature>/`, with descriptive kebab-case names: `before-after-dark.png`, `focus-light.gif`, `transition-8ms-steps-dark.png`.
-2. Commit them in their own commit (e.g. "Add <feature> comparison media"), so a reviewer can skip it and it can be dropped later.
-3. Push.
-4. Get the markdown lines:
-   ```sh
-   scripts/media-urls.sh docs/screenshots/<feature> --check
-   ```
-   It refuses to print anything if HEAD isn't pushed, lists only files that commit actually contains, and with `--check` fetches every URL.
-5. Write or update the body with them: `gh pr create --body-file body.md`, or `gh pr edit <n> --body-file body.md`.
+Never add commits to someone else's PR branch just to host images.
 
-URL forms:
-
-| Repo | URL |
-|---|---|
-| Public | `https://raw.githubusercontent.com/<owner>/<repo>/<FULL_SHA>/<path>` |
-| Private | `https://github.com/<owner>/<repo>/blob/<FULL_SHA>/<path>?raw=true` (renders for anyone who can read the repo; `raw.githubusercontent.com` would 404 for them) |
-
-**Why the SHA and not the branch name:** a branch URL breaks when the branch is deleted after merge, and it changes if someone force-pushes. A SHA from the PR stays reachable through the PR's `refs/pull/<n>/head`, so the images outlive the branch.
-
-**Don't use relative paths** (`![](docs/screenshots/x.png)`). They don't resolve in PR descriptions.
-
-## Orphan media branch: existing PRs, forks, and repos that shouldn't get binaries in the main history
-
-Committing media on the branch means it merges into `main` (the diri PRs did this, which is fine for a small repo with a `docs/screenshots` convention). If the repo is large, strict about binaries, or has no such convention, use a dedicated orphan branch that never merges:
+### The orphan `pr-media` branch
 
 ```sh
 git worktree add --detach ../pr-media
@@ -41,7 +22,20 @@ git add . && git commit -m "Media for <feature-branch-name>" && git push -u orig
 scripts/media-urls.sh <feature-branch-name> --check    # run inside ../pr-media
 ```
 
-Say in the PR which branch the media lives on, so nobody deletes it.
+Name the files in descriptive kebab-case: `before-after-dark.png`, `focus-light.gif`, `transition-8ms-steps-dark.png`. Say in the PR that its media lives on `pr-media`, so nobody deletes the branch.
+
+### Links
+
+`scripts/media-urls.sh <dir> --check` prints one markdown image line per file. It refuses to print anything if HEAD isn't pushed, lists only files that commit contains, and with `--check` confirms that every file resolves. Public repos are checked over HTTP; private repos through the GitHub API.
+
+| Repo | URL |
+|---|---|
+| Public | `https://raw.githubusercontent.com/<owner>/<repo>/<FULL_SHA>/<path>` |
+| Private | `https://github.com/<owner>/<repo>/blob/<FULL_SHA>/<path>?raw=true` (renders for anyone who can read the repo; `raw.githubusercontent.com` would 404 for them) |
+
+**Why the SHA and not the branch name:** a branch URL changes when someone pushes to it, and breaks if the branch is deleted. A pinned SHA always shows the same file. On `pr-media` the SHA stays reachable as long as the branch exists; on a PR branch, GitHub keeps it through `refs/pull/<n>/head`.
+
+**Don't use relative paths** (`![](docs/screenshots/x.png)`). They don't resolve in PR descriptions.
 
 ## Video
 
@@ -63,4 +57,4 @@ GitHub plays video only from its own upload endpoint, not from a repo URL. A lin
 gh pr view <n> --json body --jq .body | grep -oE 'https://[^)]+\.(png|gif|jpe?g)[^)]*'
 ```
 
-Every URL should contain a full 40-character SHA that's on the remote. For public repos, `curl -sI` each one and expect a 200. If you can open the PR in a browser, look at it. The page the reviewer sees is what you actually delivered.
+Every URL should contain a full 40-character SHA that's on the remote. `media-urls.sh --check` verifies them; for a spot check, `curl -sI` a public URL, or `gh api repos/<owner>/<repo>/contents/<path>?ref=<sha>` a private one. If you can open the PR in a browser, look at it. The page the reviewer sees is what you actually delivered.

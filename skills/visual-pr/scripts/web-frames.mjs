@@ -79,7 +79,7 @@ async function run(spec) {
   if (kind === "click") await page.click(value);
   else if (kind === "hover") await page.hover(value);
   else if (kind === "press") await page.keyboard.press(value);
-  else if (kind === "fill") { const [sel, text] = value.split("="); await page.fill(sel, text); }
+  else if (kind === "fill") { const at = value.indexOf("="); await page.fill(value.slice(0, at), value.slice(at + 1)); }
   else if (kind === "eval") await page.evaluate(value);
   else if (kind === "file") await (await import(pathToFileURL(resolve(value)))).default(page);
   else throw new Error(`unknown action ${spec}`);

@@ -7,7 +7,8 @@
 # Public repos get raw.githubusercontent.com URLs. Private repos get
 # github.com/<repo>/blob/<sha>/<path>?raw=true, which renders for anyone who
 # can read the repo (raw.githubusercontent.com would 404 for them).
-# --check fetches each URL (public repos only) and fails on anything but 200.
+# --check confirms every file resolves (HTTP for public repos, the GitHub API
+# for private ones) and exits non-zero if any doesn't.
 #
 # Alt text is derived from the file name (dark-to-light.gif -> "dark to light");
 # edit it to say what the image shows.
@@ -44,9 +45,14 @@ while IFS= read -r path; do
   fi
   name=$(basename "$path"); alt=${name%.*}; alt=${alt//[-_]/ }
   echo "![$alt]($url)"
-  if [ "$check" = "--check" ] && [ "$private" != true ]; then
-    code=$(curl -s -o /dev/null -w '%{http_code}' "$url")
-    [ "$code" = 200 ] || { echo "  ^ HTTP $code" >&2; status=1; }
+  if [ "$check" = "--check" ]; then
+    if [ "$private" = true ]; then
+      gh api "repos/$repo/contents/$path?ref=$sha" --silent 2>/dev/null \
+        || { echo "  ^ not readable at $sha through the GitHub API" >&2; status=1; }
+    else
+      code=$(curl -s -o /dev/null -w '%{http_code}' "$url")
+      [ "$code" = 200 ] || { echo "  ^ HTTP $code" >&2; status=1; }
+    fi
   fi
 done <<< "$files"
 exit $status
