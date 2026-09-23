@@ -31,6 +31,8 @@ The reference PRs this skill is distilled from are cristicretu/diri #459, #460, 
 
 <details><summary>Light theme</summary> …same table… </details>
 
+## Edge cases     (most PRs: a table of case | how checked | result)
+
 ---
 
 ## How            (the decisions that aren't obvious, and what you tried and dropped)
@@ -86,7 +88,7 @@ When a visual doesn't show much, say so plainly: "the before/after transcripts a
 
 Do this while you build, not after. The frames are also how you judge your own work. The reference agents found real bugs (a progress bar turning pink, yellow drifting olive, invisible final animation frames) only because they looked at them.
 
-1. **Plan the shots** as soon as the change is understood. List the states and transitions a reviewer needs to see: before vs after, every state involved (focused/unfocused, empty/full, light/dark), the transition between states, and the edge cases (wide glyphs, long text, inverse colors, error state, small screen). Check the premise first: render `main` and confirm the problem looks like you were told it does.
+1. **Plan the shots** as soon as the change is understood. List the states and transitions a reviewer needs to see: before vs after, every state involved (focused/unfocused, empty/full, light/dark), the transition between states, and the edge cases (wide glyphs, long text, inverse colors, error state, small screen). Check the premise first: render `main` and confirm the problem looks like you were told it does. Then list the **edge cases and blast radius**: the awkward inputs to the new thing, and every existing flow that goes through the code you changed. Put a capture of those flows in the plan too.
 2. **Build a synthetic fixture** that is realistic and deterministic. See `references/fixtures.md`. Real-looking content (a transcript, a diff, a list with long names), fixed data, fixed size, and content that describes the feature itself where that's natural.
 3. **Capture deterministically.** Freeze or fake the clock and step it frame by frame, so every frame is exactly reproducible. Screen-record wall-clock time only when stepping is impossible, and say so in the caption. Render `main` from the same fixture and input script: a second worktree on another port or simulator, or the branch with the feature switched off (say which). `references/capture.md` has recipes for web and Next.js (Playwright fake clock, Web Animations scrubbing), iOS (simctl, status-bar override, Core Animation scrubbing, ImageRenderer), Android, React Native, Electron and desktop, custom renderers, and CLIs.
 4. **Compose** with the bundled scripts (Python 3 + Pillow, ffmpeg; matplotlib for charts; Node + Playwright for web):
@@ -99,6 +101,17 @@ Do this while you build, not after. The frames are also how you judge your own w
 5. **Look at every image** with your image-reading tool before shipping it. Check it shows what the caption claims, the labels are readable at about 900 px wide, nothing is cropped wrong, and the motion reads the way you intended. If you changed something after looking (an easing, a duration, an opacity), put that in How. It's some of the most useful content in the PR.
 6. **Host the media** by committing it under the repo's media convention (default `docs/screenshots/<feature>/`), pushing, and referencing it with a URL pinned to the commit SHA. Run `scripts/media-urls.sh docs/screenshots/<feature> --check` to print the markdown lines and confirm they resolve. See `references/hosting.md` for private repos, orphan media branches, and why you shouldn't use mp4. **If you're updating the description of an existing PR (yours or anyone's), don't add commits to its branch.** Push the media to the orphan `pr-media` branch instead, so the PR's code history stays exactly what the author pushed.
 7. **Write the body** to a file only you use (`body=$(mktemp -t pr-<number>-body.XXXX)`). Other agents may share your scratch directory, and a shared `body.md` can end up posting one PR's description on another. Before posting, check that the file's first line is the summary for *this* change. Then create the PR with `gh pr create --body-file "$body"`, or update it with `gh pr edit <n> --body-file "$body"` if the media commit came later. Afterwards, run `gh pr view <n> --json title,body` and confirm the posted body belongs to that PR and every image URL points at a pushed SHA.
+
+## Edge cases and blast radius
+
+Most PRs need this; copy or token-only changes don't. Regressions rarely come from the feature itself. They come from **existing flows that go through the code you changed**, and from inputs to that code changing **mid-session**. A real example: a sharing feature hid the chat view behind an ownership query "whenever the chat exists". A brand-new chat only starts to exist once its first answer is saved, so every new chat reloaded behind a spinner right after its first reply. That shipped with 300+ passing tests, all of them about sharing.
+
+- **Blast radius.** Find every reader of each condition, flag, query or state you changed. For each existing flow, especially the ones your feature doesn't target, say what it did before and what it does now.
+- **Transitions.** Walk each input through its changes while the screen stays mounted: new → saved, loading → refetching, signed out → in, flag off → on, empty → first item. A frame strip across the transition shows flashes and remounts.
+- **Inputs.** Frontend: hover and focus states, long text and translations, RTL, empty and huge lists, 320 px, dark mode, reduced motion, keyboard, slow network. Backend: null and huge data, other user or anonymous, concurrent and repeated requests, old rows, flag on/off.
+- **Show it** as an `## Edge cases` table (case | how checked | result), with small figures for the visual ones. Anything you didn't check goes under Not in this PR.
+
+Checklists and the table format are in `references/edge-cases.md`.
 
 ## Backend and full-stack changes
 
@@ -133,6 +146,7 @@ If you're orchestrating agents that each open a PR, give every one of them this 
 | `references/capture.md` | Capturing stills or motion on web/Next.js, iOS, Android, React Native/Flutter, desktop, custom renderers, CLI |
 | `references/fixtures.md` | Building the synthetic scene or data the shots are taken of |
 | `references/media.md` | Choosing formats, labels, sizes, GIF budgets, and the composing recipes |
+| `references/edge-cases.md` | Listing what else the change could break: blast radius, mid-session transitions, frontend and backend input checklists |
 | `references/backend.md` | The change is server-side, data, infra, or full-stack |
 | `references/hosting.md` | Getting images into the PR body (SHA-pinned URLs, private repos, orphan media branch, video) |
 | `references/examples.md` | Seeing the reference PRs dissected, a rewritten body in the target shape, and a delegation brief |

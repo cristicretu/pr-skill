@@ -4,7 +4,8 @@ An agent skill for pull requests a reviewer understands in one scroll:
 
 1. **A short, human summary** (120 words at most) of what was wrong and what's different now.
 2. **Evidence made for the PR**, laid out as titled figures: before/after stills in `main | this branch` tables, real-speed and slowed-down GIFs, frame strips with `+N ms` labels, and zoomed crops of edge cases. Every figure has a caption naming the input, what changed, and where to look.
-3. **The details** for whoever wants them: How (decisions and rejected alternatives), Verification (real numbers), Not in this PR.
+3. **Edge cases**, scaled to the risk: a table of what else the change could break (existing flows through the changed code, mid-session transitions, hover and focus, long text, RTL, permissions, concurrency) and how each was checked.
+4. **The details** for whoever wants them: How (decisions and rejected alternatives), Verification (real numbers), Not in this PR.
 
 It works for web (Next.js, React, anything in a browser), iOS, Android, React Native, Flutter, desktop, custom renderers and CLIs. It also works for backend changes: query waterfalls, latency distributions, worker lanes with a replay GIF, fault-injection timelines, and small diagrams when structure is the point. When a backend change has an effect a user can see, it shows both layers of the same action.
 
@@ -46,6 +47,7 @@ skills/visual-pr/
     fixtures.md            synthetic scenes and data made for the PR
     media.md               which visual answers which question; sizes, labels, budgets
     backend.md             making server, data and infra changes visible
+    edge-cases.md          blast radius, mid-session transitions, frontend/backend checklists
     hosting.md             SHA-pinned image URLs, private repos, media branch, video
     examples.md            the reference PRs walked through, and a rewrite in the target shape
   scripts/
