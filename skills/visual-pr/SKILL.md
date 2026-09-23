@@ -21,13 +21,13 @@ The reference PRs this skill is distilled from are cristicretu/diri #459, #460, 
 
 | main | this branch |
 |---|---|
-| <img src="…/main-dark.png" alt="…"> | <img src="…/branch-dark.png" alt="…"> |
+| ![main: …](./main-dark.png) | ![this branch: …](./branch-dark.png) |
 
 **Moving the pointer.** <caption>
-![…](one composited main|branch GIF)
+![…](./open-close.gif)          (one composited main|branch GIF)
 
 **Slowed down.** <caption: "one tile per 8 ms; top row loses focus, bottom gains it">
-![…](frame strip)
+![…](./transition-strip.png)
 
 <details><summary>Light theme</summary> …same table… </details>
 
@@ -65,7 +65,7 @@ Before adding a visual, write down the reviewer question it answers ("does the n
 - **Motion comparisons stay one composited GIF.** Two GIFs in two cells don't start in sync.
 - **Never two images in a row with no text between them**, except inside a table.
 - A `---` between the figures and `## How` separates what to look at from what to read.
-- Use `<img src="…" width="420">` when an image renders larger than its information deserves (a small crop captured at 2x).
+- Write every image as markdown, `![alt](./file.png)`, including inside tables. `--attach` only rewrites markdown references, so `<img src="./…">` won't upload in place. To pin a width, see `references/hosting.md`.
 
 ## Captions that explain the state change
 
@@ -96,11 +96,12 @@ Do this while you build, not after. The frames are also how you judge your own w
    - `scripts/compare.py`: labeled before/after panels, stacked or side by side. Pass frame directories instead of files to get a side-by-side GIF.
    - `scripts/strip.py`: frame strip with `+N ms` labels, a crop of the region that moves, and nearest-neighbour zoom.
    - `scripts/gif.sh`: palette-optimized GIF with slow-motion playback, a held last frame, and a warning over 4 MB.
+   - `scripts/check-body.sh`: after posting, fails if any local `./` path wasn't uploaded or any image link doesn't load.
    - `scripts/chart.py`: backend charts, main vs branch on one scale. Trace waterfalls and worker lanes (plus a replay GIF), latency distributions, series with a shaded fault window.
    Details and budgets are in `references/media.md`.
 5. **Look at every image** with your image-reading tool before shipping it. Check it shows what the caption claims, the labels are readable at about 900 px wide, nothing is cropped wrong, and the motion reads the way you intended. If you changed something after looking (an easing, a duration, an opacity), put that in How. It's some of the most useful content in the PR.
-6. **Host the media** where the repo says. Its own instructions (`AGENTS.md`, `CLAUDE.md`, `CONTRIBUTING.md`) win, then any existing convention. Otherwise use the orphan `pr-media` branch, which never merges, so no binaries reach `main`. Link each file by a URL pinned to the commit SHA: run `scripts/media-urls.sh <dir> --check` to print the markdown lines and confirm every one resolves, private repos included. Never add commits to someone else's PR branch just to host images. Details are in `references/hosting.md`.
-7. **Write the body** to a file only you use (`body=$(mktemp -t pr-<number>-body.XXXX)`). Other agents may share your scratch directory, and a shared `body.md` can end up posting one PR's description on another. Before posting, check that the file's first line is the summary for *this* change. Then create the PR with `gh pr create --body-file "$body"`, or update it with `gh pr edit <n> --body-file "$body"` if the media commit came later. Afterwards, run `gh pr view <n> --json title,body` and confirm the posted body belongs to that PR and every image URL points at a pushed SHA.
+6. **Attach the media; don't commit it.** This works exactly like pasting a screenshot into GitHub: `gh pr create` or `gh pr edit` with `--attach ./file.png` (gh ≥ 2.99) uploads each file to GitHub's attachment storage and rewrites the matching `![alt](./file.png)` in the body to its URL. Nothing touches git, and on a private repo only people with access can see it. A repo's own media rule (in `AGENTS.md`, `CLAUDE.md`, `CONTRIBUTING.md`) wins. Fallbacks for when `--attach` isn't available, and what it does and doesn't rewrite, are in `references/hosting.md`.
+7. **Write the body** to a file only you use (`body=$(mktemp -t pr-<number>-body.XXXX)`), next to the media, referencing each file as `./name.png`. Other agents may share your scratch directory, and a shared `body.md` can end up posting one PR's description on another. Check that the file's first line is the summary for *this* change. Then run, from the media folder, `gh pr create --title … --body-file "$body" --attach ./a.png --attach ./b.gif …`, or `gh pr edit <n> --body-file "$body" --attach …` for an existing PR. Finally, run `scripts/check-body.sh <n>`: it fails if a `./` path wasn't uploaded or a link doesn't load. Also confirm with `gh pr view <n> --json title` that you edited the right PR.
 
 ## Edge cases and blast radius
 
@@ -148,5 +149,5 @@ If you're orchestrating agents that each open a PR, give every one of them this 
 | `references/media.md` | Choosing formats, labels, sizes, GIF budgets, and the composing recipes |
 | `references/edge-cases.md` | Listing what else the change could break: blast radius, mid-session transitions, frontend and backend input checklists |
 | `references/backend.md` | The change is server-side, data, infra, or full-stack |
-| `references/hosting.md` | Getting images into the PR body (SHA-pinned URLs, private repos, orphan media branch, video) |
+| `references/hosting.md` | Getting images into the PR body: `gh --attach` (like pasting), what it rewrites, fallbacks, video |
 | `references/examples.md` | Seeing the reference PRs dissected, a rewritten body in the target shape, and a delegation brief |

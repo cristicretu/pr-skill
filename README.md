@@ -48,7 +48,7 @@ skills/visual-pr/
     media.md               which visual answers which question; sizes, labels, budgets
     backend.md             making server, data and infra changes visible
     edge-cases.md          blast radius, mid-session transitions, frontend/backend checklists
-    hosting.md             SHA-pinned image URLs, private repos, media branch, video
+    hosting.md             attaching media with gh --attach (like pasting into GitHub), fallbacks
     examples.md            the reference PRs walked through, and a rewrite in the target shape
   scripts/
     web-frames.mjs         Playwright: stills and frames on a frozen, stepped clock (any web framework)
@@ -56,12 +56,13 @@ skills/visual-pr/
     strip.py               frame strip with +N ms labels, crop, nearest-neighbour zoom
     gif.sh                 ffmpeg palette GIF, slow motion, held last frame, size check
     chart.py               waterfall / lanes (+ replay frames), latency ECDF, series with fault band
-    media-urls.sh          commit-pinned markdown image lines, checked against the remote
+    check-body.sh          after posting: no local paths left, every image link loads
+    media-urls.sh          fallback: SHA-pinned links for media on an orphan branch
 ```
 
 ## Requirements
 
-- `git` and `gh` (authenticated)
+- `git` and `gh` 2.99 or newer (authenticated), for `--attach`
 - Python 3 with Pillow; matplotlib for `chart.py`
 - ffmpeg
 - For web capture: Node and Playwright in the target project (`pnpm add -D playwright && pnpm exec playwright install chromium`)

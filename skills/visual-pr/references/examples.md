@@ -69,21 +69,21 @@ It's a static marker: an unfocused pane schedules zero frames.
 ## Before and after
 
 **Two panes, left focused.** On main the right pane shows no cursor at all. On this branch it's a hollow outline.
-![before and after, dark](…/before-after-dark.png)
+![before and after, dark](./before-after-dark.png)
 
 **The hard cells, at 4x.** Hollow on top, filled below: a normal cell, an inverse status bar, a double-width glyph, a blank cell.
-<img src="…/crops-4x-dark.png" width="640" alt="4x crops">
+![4x crops](./crops-4x-dark.png)
 
 **Focus moving.** 60 fps; a keystroke every 250 ms keeps the blink off, so only the focus change shows.
-![focus moving](…/focus-dark.gif)
+![focus moving](./focus-dark.gif)
 
 **Slowed down.** One tile per 8 ms since the change. The top pane's fill drains under a constant outline; the bottom pane's fills back in over 120 ms.
-![transition in 8 ms steps](…/transition-8ms-steps-dark.png)
+![transition in 8 ms steps](./transition-8ms-steps-dark.png)
 
 <details><summary>Light theme</summary>
 
-![before and after, light](…/before-after-light.png)
-![focus moving, light](…/focus-light.gif)
+![before and after, light](./before-after-light.png)
+![focus moving, light](./focus-light.gif)
 </details>
 
 ---
