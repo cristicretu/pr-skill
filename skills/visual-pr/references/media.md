@@ -37,6 +37,8 @@ A PR with no motion stops after step 1 or 4. Don't pad it.
 - **Capture at 2x and display at about 1x.** GitHub renders images at up to roughly 900 px in the PR column. A 2x capture of a 450–1000 px region stays sharp.
 - **Readable at 900 px.** Labels must survive that downscale. `strip.py` wraps rows at about 2000 px for this reason. Anything wider than about 2000 px gets its text shrunk to noise.
 - **GIFs under about 4 MB** (GitHub accepts larger, but reviewers on slow connections see a blank box). Levers, in order: crop to the region that moves, shorten to one clean repetition, `--width` down, drop to 30 fps. `gif.sh` warns above 4 MB.
+- **Side-by-side GIFs need width.** Two panels shown at 1x can end up about 500 px wide, with labels around 10 px. Keep side-by-side GIFs about 900–1000 px wide: capture at 2x and let `gif.sh` cap the width instead of halving it.
+- **Long walkthroughs:** if a caption has to list more than about 4 stops, either split the GIF or burn a small step label into each stop ("3/7 grandchild: nothing marked").
 - **Hold the last frame about 1 s** (`gif.sh --hold`) so the loop reads as "action, result" rather than a seizure.
 - **Start from rest.** Include a few frames before the input, so the change has a "before" inside the GIF itself.
 - **Slow motion at 4–10x** for anything under 300 ms. 120 ms at real speed is 7 frames, which nobody can judge.

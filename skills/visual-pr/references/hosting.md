@@ -2,7 +2,9 @@
 
 There's no API for the drag-and-drop upload GitHub's web editor uses (`user-attachments`). An agent has to host the media in git and link it by URL.
 
-## Default: commit it on the PR branch, link it by commit SHA
+## Default for a PR you're opening: commit it on the PR branch, link it by commit SHA
+
+(Updating an existing PR's description, or a PR from a fork? Skip to the orphan media branch below. Never add commits to a branch just to host images.)
 
 1. Put the files under the repo's existing media convention. Check first (`git ls-files | grep -iE '\.(png|gif)$' | head`). If there isn't one, use `docs/screenshots/<feature>/`, with descriptive kebab-case names: `before-after-dark.png`, `focus-light.gif`, `transition-8ms-steps-dark.png`.
 2. Commit them in their own commit (e.g. "Add <feature> comparison media"), so a reviewer can skip it and it can be dropped later.
@@ -25,7 +27,7 @@ URL forms:
 
 **Don't use relative paths** (`![](docs/screenshots/x.png)`). They don't resolve in PR descriptions.
 
-## When binaries shouldn't land in the main history
+## Orphan media branch: existing PRs, forks, and repos that shouldn't get binaries in the main history
 
 Committing media on the branch means it merges into `main` (the diri PRs did this, which is fine for a small repo with a `docs/screenshots` convention). If the repo is large, strict about binaries, or has no such convention, use a dedicated orphan branch that never merges:
 

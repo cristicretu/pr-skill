@@ -34,7 +34,7 @@ The reference PRs this skill is distilled from are cristicretu/diri #459, #460, 
 
 Rules for each part:
 
-1. **Summary (max 2 paragraphs).** Write it the way you'd explain the change to a colleague at their desk. Name the concrete symptom ("under a slow drag the text sat still for 15 px of finger travel and then jumped"), not a category ("improves scrolling"). If you checked the premise before building and it turned out weaker than expected, say so here. Being honest about that earns more trust than anything else in the PR. No headers, no bullets, no file names.
+1. **Summary (max 2 paragraphs).** Write it the way you'd explain the change to a colleague at their desk. Name the concrete symptom ("under a slow drag the text sat still for 15 px of finger travel and then jumped"), not a category ("improves scrolling"). If you checked the premise before building and it turned out weaker than expected, say so here. Being honest about that earns more trust than anything else in the PR. No headers, no bullets, no file names. Hard cap: **120 words across both paragraphs**. Count them. Write for someone who hasn't read the issue or the code: say what a user saw and what they see now. Internal names (lock types, function names, error codes) go in How, unless one of them is the symptom itself.
 2. **Visuals, each with a caption.** Before every image, write one line that tells the reviewer what they are looking at and what changes between states: the input that was replayed, what differs across panels, and where to look. The caption's job is to explain the state change so the image doesn't have to be decoded. See "Captions" below.
 3. **Details, after the visuals.** Use only the sections that add something. How covers the non-obvious decisions and the alternatives you rejected, with the reason for each. Verification gives measured results. Not in this PR marks the scope. If the details run long, put Verification inside `<details><summary>Verification</summary>…</details>` so the page stays scannable.
 4. **Optional sections** that earn their place when they apply: *Review first* (the 2–4 spots where you're least sure, which also tells the reviewer where to start), *Merge notes* (conflicts with open PRs), and *Tests changed, and why* (every existing test you modified, with the reason).
@@ -73,7 +73,7 @@ Do this while you build, not after. The frames are also how you judge your own w
    - `scripts/chart.py`: backend charts, main vs branch on one scale. Trace waterfalls and worker lanes (plus a replay GIF), latency distributions, series with a shaded fault window.
    Details and budgets are in `references/media.md`.
 5. **Look at every image** with your image-reading tool before shipping it. Check it shows what the caption claims, the labels are readable at about 900 px wide, nothing is cropped wrong, and the motion reads the way you intended. If you changed something after looking (an easing, a duration, an opacity), put that in How. It's some of the most useful content in the PR.
-6. **Host the media** by committing it under the repo's media convention (default `docs/screenshots/<feature>/`), pushing, and referencing it with a URL pinned to the commit SHA. Run `scripts/media-urls.sh docs/screenshots/<feature> --check` to print the markdown lines and confirm they resolve. See `references/hosting.md` for private repos, orphan media branches, and why you shouldn't use mp4.
+6. **Host the media** by committing it under the repo's media convention (default `docs/screenshots/<feature>/`), pushing, and referencing it with a URL pinned to the commit SHA. Run `scripts/media-urls.sh docs/screenshots/<feature> --check` to print the markdown lines and confirm they resolve. See `references/hosting.md` for private repos, orphan media branches, and why you shouldn't use mp4. **If you're updating the description of an existing PR (yours or anyone's), don't add commits to its branch.** Push the media to the orphan `pr-media` branch instead, so the PR's code history stays exactly what the author pushed.
 7. **Write the body** to a file, create the PR with `gh pr create --body-file`, and if the media commit came later, run `gh pr edit --body-file`. Then run `gh pr view --json body` and confirm every image URL in it points at a pushed SHA.
 
 ## Backend and full-stack changes
@@ -92,6 +92,9 @@ A backend PR has to **make a screen for the behavior**, with the same imaginatio
 For **full-stack** changes, show one user action at both layers: the UI GIF (the spinner lasts 1.4 s on main and 0.2 s here) above the trace waterfall of the request that click fired, with one caption tying them together. The full catalog with data-collection recipes is in `references/backend.md`.
 
 ## Verification that reads as evidence
+
+When you're describing someone else's PR, keep **what you ran** apart from **what the author reported** ("`cargo test --workspace` passed (author's run); I re-ran the three new tests on `b1039b3d`").
+
 
 Write results, not claims: "1616 passed, 0 failed, 45 ignored" rather than "tests pass". Name any flaky test and say how you checked it. For visual changes, the strongest proof is a **byte-identical** comparison against `main` for everything that shouldn't change (pixel fixture dumps compared with `cmp`), plus an exact count of the pixels that did change and why. For performance, give the baseline, the branch result, the noise level, and what the machine was doing at the time ("other agents were building during the main run"). Never claim a result you didn't see.
 

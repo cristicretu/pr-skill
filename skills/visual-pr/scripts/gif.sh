@@ -7,8 +7,10 @@
 # --play-fps  rate to play them at; lower than --fps is slow motion
 #             (captured at 60, played at 15 = 4x slower). Default: --fps.
 #             GIF delays are in centiseconds, so rates above 50 get rounded.
-# --width     output width in px (default: half the input, i.e. a 2x capture
-#             shown at 1x). Use 0 to keep the input size.
+# --width     output width in px. Default: the input width, capped at 1000 px
+#             (GitHub's column is ~900; wider only costs bytes). A 2x capture
+#             of a narrow region stays sharp, and side-by-side panels stay
+#             readable. Use 0 to keep the input size exactly.
 # --hold      seconds to hold the last frame so the loop reads (default 1.0)
 # --crop      ffmpeg crop before scaling, w:h:x:y in input pixels
 #
@@ -36,7 +38,7 @@ start=$(echo "$first" | sed -E 's/frame_0*([0-9]+)\.png/\1/')
 
 filters=""
 [ -n "$crop" ] && filters="crop=$crop,"
-if [ -z "$width" ]; then filters+="scale=iw/2:-1:flags=lanczos,"
+if [ -z "$width" ]; then filters+="scale='min(iw,1000)':-2:flags=lanczos,"
 elif [ "$width" != 0 ]; then filters+="scale=$width:-1:flags=lanczos,"; fi
 filters+="tpad=stop_mode=clone:stop_duration=$hold,"
 filters+="split[a][b];[a]palettegen=stats_mode=diff[p];[b][p]paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle"

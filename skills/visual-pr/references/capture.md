@@ -5,6 +5,7 @@ The same principles hold on every platform. Only the tools change.
 - **Same input, two builds.** Render `main` and the branch from the identical fixture and scripted input. Get `main` with `git worktree add ../<repo>-main origin/main` and run it on another port or simulator. If the feature can be switched off (a flag, `reduce_motion`, an env var), rendering the branch with it off is also acceptable, as long as the caption says so.
 - **Freeze time, then step it.** Frame N must be exactly t = N × step after the input, every run. Recording wall-clock time gives you dropped frames, jitter, and a GIF that doesn't match what the code does.
 - **Fix everything else too:** viewport and device scale (capture at 2x), color scheme, fonts loaded, locale and timezone, the fake "now" (use a fixed date), random seeds, the status bar and clock on mobile, and the text caret (hide it).
+- **Draw what a headless render can't show.** Offscreen renders have no mouse pointer, no touch indicator and often no window vibrancy. Draw the pointer or touch dot onto the frame at the real event position (the #491 rewrite did this), and mention render artifacts in a small note under the images ("the light sidebar looks flat grey because a headless render has no vibrancy").
 - **Crop to what matters.** Capture the element or region, not the whole desktop. Use full-window shots only when context is the point.
 - **Check the premise first.** Capture `main` before you build, and confirm the problem looks the way it was described.
 
