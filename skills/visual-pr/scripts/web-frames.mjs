@@ -65,11 +65,14 @@ const context = await browser.newContext({
 const page = await context.newPage();
 const start = Date.parse("2026-01-15T09:41:00");
 await page.clock.install({ time: start });
-await page.goto(args.url, { waitUntil: "networkidle" });
+await page.goto(args.url, { waitUntil: "load" });
+// Pages with open streams or sockets never go network-idle; don't wait forever.
+await page.waitForLoadState("networkidle", { timeout: 5000 }).catch(() => {});
 await page.evaluate(() => document.fonts.ready);
-// install() lets fake time flow at wall-clock speed; pauseAt() jumps ahead
-// (past entrance animations) and freezes it, so only runFor() moves it now.
-await page.clock.pauseAt(start + 5000);
+// install() lets fake time flow at wall-clock speed, so pause relative to the
+// page's current time (a slow load may be past any fixed target), 2 s ahead to
+// skip entrance animations. From here only runFor() moves time.
+await page.clock.pauseAt((await page.evaluate(() => Date.now())) + 2000);
 await settle(page);
 
 async function run(spec) {
