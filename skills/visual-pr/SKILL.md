@@ -110,10 +110,10 @@ A backend PR has to **make a screen for the behavior**, with the same imaginatio
 - **Resilience**: a fault-injection timeline with the outage shaded. In-flight requests pile up on main and fail fast on the branch.
 - **Memory/CPU**: soak-test series and flame graphs. **Queries**: EXPLAIN before/after with the changed node called out.
 - **Contracts and data**: request/response or sample rows before/after in a `diff` block, and an ER diagram for migrations.
-- **Flows and state machines**: Mermaid sequence and state diagrams of the real participants, before and after.
+- **Flows, cycles, state machines**: the smallest Mermaid diagram of the real participants, only when structure is the point (a deadlock as a 3-node wait-for loop). Usually draw only the broken state.
 - When none of these fit, build a **tiny single-file visualizer** (a token bucket filling, a queue draining, replicas converging) fed by the real code's event log, and capture it like any UI.
 
-For **full-stack** changes, show one user action at both layers: the UI GIF (the spinner lasts 1.4 s on main and 0.2 s here) above the trace waterfall of the request that click fired, with one caption tying them together. The full catalog with data-collection recipes is in `references/backend.md`.
+**If a backend change has an effect a user can see** (a page loads faster, a spinner goes away, an error message changes), the PR must show that too. A waterfall or table explains why, but not what the user gets. Show one user action at both layers: the UI GIF (the spinner lasts 1.4 s on main and 0.2 s here) above the trace waterfall of the request that click fired, with one caption tying them together. The full catalog with data-collection recipes is in `references/backend.md`.
 
 ## Verification that reads as evidence
 

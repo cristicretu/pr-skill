@@ -34,7 +34,7 @@ Rules for it:
 
 ## Full-stack changes: show both layers of one action
 
-When a backend change has a user-visible effect, show the same user action at both layers:
+When a backend change has a user-visible effect, this isn't optional: show the same user action at both layers. (A test run fixed an N+1 on a page that showed "Loading…" for 337 ms, and posted only the waterfall and a table. It was correct but only half the story.)
 
 1. **Top:** the UI GIF, main vs branch. The spinner shows for 1.4 s on main and 0.2 s on the branch.
 2. **Below:** the trace waterfall of the request that click fired, main vs branch, same scale.
