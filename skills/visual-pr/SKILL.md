@@ -1,0 +1,111 @@
+---
+name: visual-pr
+description: Write pull requests a reviewer can understand in one scroll. A short human summary, then before/after stills, GIFs and slowed-down frame strips made for the PR from synthetic fixtures, each with a caption naming the state change, then the details. Use whenever you open a PR, write or rewrite a PR description, or are asked for "before/after", screenshots, a GIF or a demo of a change. It matters most for UI, animation, rendering, color, layout, performance and UX changes, and it still applies to backend work, where the visuals are diagrams, tables and output diffs.
+---
+
+# Visual PRs
+
+A reviewer should understand what changed and see that it works before reading a single line of the How. Words alone don't do that. Evidence you made for the PR does: the same input rendered on `main` and on the branch, the motion slowed down until the easing can be judged, the edge cases cropped and zoomed in, and the numbers measured.
+
+The reference PRs this skill is distilled from are cristicretu/diri #459, #460, #464, #465 and #476. `references/examples.md` walks through what each one did.
+
+## The shape of the body
+
+```
+<1–2 paragraphs, plain words: what was wrong or missing, as a user feels it,
+ and what is different now. Nothing else above the first image.>
+
+<caption: the input, then what to watch>
+![...](before/after still)
+
+<caption>
+![...](GIF of the real interaction)
+
+<caption: "slowed down, one tile per 8 ms; top row loses focus, bottom gains it">
+![...](frame strip or slow-motion GIF)
+
+<caption>
+![...](edge cases: 4x crops, light + dark, the awkward inputs)
+
+## How            (the decisions that aren't obvious, and what you tried and dropped)
+## Verification   (real numbers and commands; paste results, not claims)
+## Not in this PR (the scope you drew, and anything you noticed but left)
+```
+
+Rules for each part:
+
+1. **Summary (max 2 paragraphs).** Write it the way you'd explain the change to a colleague at their desk. Name the concrete symptom ("under a slow drag the text sat still for 15 px of finger travel and then jumped"), not a category ("improves scrolling"). If you checked the premise before building and it turned out weaker than expected, say so here. Being honest about that earns more trust than anything else in the PR. No headers, no bullets, no file names.
+2. **Visuals, each with a caption.** Before every image, write one line that tells the reviewer what they are looking at and what changes between states: the input that was replayed, what differs across panels, and where to look. The caption's job is to explain the state change so the image doesn't have to be decoded. See "Captions" below.
+3. **Details, after the visuals.** Use only the sections that add something. How covers the non-obvious decisions and the alternatives you rejected, with the reason for each. Verification gives measured results. Not in this PR marks the scope. If the details run long, put Verification inside `<details><summary>Verification</summary>…</details>` so the page stays scannable.
+4. **Optional sections** that earn their place when they apply: *Review first* (the 2–4 spots where you're least sure, which also tells the reviewer where to start), *Merge notes* (conflicts with open PRs), and *Tests changed, and why* (every existing test you modified, with the reason).
+
+Length. The reference PRs run to about 1,300 words, which is too long. Aim for a summary under 120 words, captions of one sentence, and bullets of one or two lines. Cut any sentence that repeats what an image already shows. Keep the numbers and the rejected alternatives, because those are the parts reviewers can't get anywhere else.
+
+## Captions that explain the state change
+
+A good caption answers three things: **what input** produced this, **what differs** between the panels or frames, and **where to look**.
+
+| Weak | Strong |
+|---|---|
+| Before and after | Same scripted fling replayed on main (top) and this branch (bottom): main holds still, then jumps a row |
+| Checkout page | Cart with 40 items and a 60-character product name, iPhone SE width: the total used to wrap under the button, now it stays on one line |
+| GIF of the animation | Opening the sheet, then dragging it halfway and letting go. On main it snaps shut; now it settles back open |
+| Frame strip | Slowed down, one tile per 8 ms, times since the click. Watch the badge: it scales from 0.9, never from 0 |
+| Loading state | Network throttled to 3G: the skeleton now holds the exact layout of the loaded list, so nothing shifts when data arrives |
+| Dark mode screenshot | Look at the divider under the header: invisible on main in dark mode, a 1 px line now |
+
+Put labels on the images too. Each panel gets a caption bar saying what it shows (`main: total wraps under the button` / `this branch: one line at 320 px`), and each strip tile gets its time (`+16 ms`) or value (`64%`). A reader skimming only the images should still get the story.
+
+When a visual doesn't show much, say so plainly: "the before/after transcripts are close to identical, and I am not going to claim otherwise." If a fixture exaggerates something to make the mechanism visible, label it in bold: **This is not what ships.**
+
+## Workflow
+
+Do this while you build, not after. The frames are also how you judge your own work. The reference agents found real bugs (a progress bar turning pink, yellow drifting olive, invisible final animation frames) only because they looked at them.
+
+1. **Plan the shots** as soon as the change is understood. List the states and transitions a reviewer needs to see: before vs after, every state involved (focused/unfocused, empty/full, light/dark), the transition between states, and the edge cases (wide glyphs, long text, inverse colors, error state, small screen). Check the premise first: render `main` and confirm the problem looks like you were told it does.
+2. **Build a synthetic fixture** that is realistic and deterministic. See `references/fixtures.md`. Real-looking content (a transcript, a diff, a list with long names), fixed data, fixed size, and content that describes the feature itself where that's natural.
+3. **Capture deterministically.** Freeze or fake the clock and step it frame by frame, so every frame is exactly reproducible. Screen-record wall-clock time only when stepping is impossible, and say so in the caption. Render `main` from the same fixture and input script: a second worktree on another port or simulator, or the branch with the feature switched off (say which). `references/capture.md` has recipes for web and Next.js (Playwright fake clock, Web Animations scrubbing), iOS (simctl, status-bar override, Core Animation scrubbing, ImageRenderer), Android, React Native, Electron and desktop, custom renderers, and CLIs.
+4. **Compose** with the bundled scripts (Python 3 + Pillow, ffmpeg; matplotlib for charts; Node + Playwright for web):
+   - `scripts/web-frames.mjs`: web stills and stepped animation frames on a frozen clock, for any framework, with `--probe` to log a value per frame.
+   - `scripts/compare.py`: labeled before/after panels, stacked or side by side. Pass frame directories instead of files to get a side-by-side GIF.
+   - `scripts/strip.py`: frame strip with `+N ms` labels, a crop of the region that moves, and nearest-neighbour zoom.
+   - `scripts/gif.sh`: palette-optimized GIF with slow-motion playback, a held last frame, and a warning over 4 MB.
+   - `scripts/chart.py`: backend charts, main vs branch on one scale. Trace waterfalls and worker lanes (plus a replay GIF), latency distributions, series with a shaded fault window.
+   Details and budgets are in `references/media.md`.
+5. **Look at every image** with your image-reading tool before shipping it. Check it shows what the caption claims, the labels are readable at about 900 px wide, nothing is cropped wrong, and the motion reads the way you intended. If you changed something after looking (an easing, a duration, an opacity), put that in How. It's some of the most useful content in the PR.
+6. **Host the media** by committing it under the repo's media convention (default `docs/screenshots/<feature>/`), pushing, and referencing it with a URL pinned to the commit SHA. Run `scripts/media-urls.sh docs/screenshots/<feature> --check` to print the markdown lines and confirm they resolve. See `references/hosting.md` for private repos, orphan media branches, and why you shouldn't use mp4.
+7. **Write the body** to a file, create the PR with `gh pr create --body-file`, and if the media commit came later, run `gh pr edit --body-file`. Then run `gh pr view --json body` and confirm every image URL in it points at a pushed SHA.
+
+## Backend and full-stack changes
+
+A backend PR has to **make a screen for the behavior**, with the same imagination as a UI PR. The equivalent of a synthetic UI is a throwaway visualization of real data from a scripted run against `main` and the branch, drawn on one scale:
+
+- **Fewer or faster calls**: a trace waterfall, 14 stacked queries above, 2 below.
+- **Latency**: an ECDF with p50/p95/p99, from the same load script on both builds.
+- **Concurrency, queues, locks**: worker lanes, plus a replay GIF where a "now" line sweeps across and jobs visibly queue on main and run in parallel on the branch.
+- **Resilience**: a fault-injection timeline with the outage shaded. In-flight requests pile up on main and fail fast on the branch.
+- **Memory/CPU**: soak-test series and flame graphs. **Queries**: EXPLAIN before/after with the changed node called out.
+- **Contracts and data**: request/response or sample rows before/after in a `diff` block, and an ER diagram for migrations.
+- **Flows and state machines**: Mermaid sequence and state diagrams of the real participants, before and after.
+- When none of these fit, build a **tiny single-file visualizer** (a token bucket filling, a queue draining, replicas converging) fed by the real code's event log, and capture it like any UI.
+
+For **full-stack** changes, show one user action at both layers: the UI GIF (the spinner lasts 1.4 s on main and 0.2 s here) above the trace waterfall of the request that click fired, with one caption tying them together. The full catalog with data-collection recipes is in `references/backend.md`.
+
+## Verification that reads as evidence
+
+Write results, not claims: "1616 passed, 0 failed, 45 ignored" rather than "tests pass". Name any flaky test and say how you checked it. For visual changes, the strongest proof is a **byte-identical** comparison against `main` for everything that shouldn't change (pixel fixture dumps compared with `cmp`), plus an exact count of the pixels that did change and why. For performance, give the baseline, the branch result, the noise level, and what the machine was doing at the time ("other agents were building during the main run"). Never claim a result you didn't see.
+
+## Delegating PRs to other agents
+
+If you're orchestrating agents that each open a PR, give every one of them this skill, a brief with the repo's capture recipe, and the specific shots its PR must contain. Ask for the shots by name ("a before/after of two panes in dark and light, a 4x crop on an inverse cell, a GIF of focus moving, a slowed strip of the transition"). `references/examples.md` ends with the deliverables block from the brief that produced the reference PRs.
+
+## Reference files
+
+| File | Read it when |
+|---|---|
+| `references/capture.md` | Capturing stills or motion on web/Next.js, iOS, Android, React Native/Flutter, desktop, custom renderers, CLI |
+| `references/fixtures.md` | Building the synthetic scene or data the shots are taken of |
+| `references/media.md` | Choosing formats, labels, sizes, GIF budgets, and the composing recipes |
+| `references/backend.md` | The change is server-side, data, infra, or full-stack |
+| `references/hosting.md` | Getting images into the PR body (SHA-pinned URLs, private repos, orphan media branch, video) |
+| `references/examples.md` | Seeing the reference PRs dissected, a rewritten body in the target shape, and a delegation brief |

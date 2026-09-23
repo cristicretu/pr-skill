@@ -1,0 +1,11 @@
+{
+  "name": "pr-skill",
+  "owner": { "name": "Cristian Crețu" },
+  "plugins": [
+    {
+      "name": "pr-skill",
+      "source": "./",
+      "description": "Visual, well-explained pull requests for any stack."
+    }
+  ]
+}

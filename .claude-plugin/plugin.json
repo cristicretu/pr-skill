@@ -1,0 +1,6 @@
+{
+  "name": "pr-skill",
+  "description": "Pull requests a reviewer understands in one scroll: human summary, before/after stills, GIFs and frame strips from synthetic fixtures, backend visuals, then details.",
+  "version": "0.1.0",
+  "author": { "name": "Cristian Crețu" }
+}
