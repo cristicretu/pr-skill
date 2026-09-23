@@ -68,23 +68,24 @@ That pairing (what the user feels, and why at the system level) is the most conv
 
 - Sample once a second during the scripted load (`ps -o rss= -p $PID`, `/metrics` scrape, `docker stats --no-stream`) into `t,value` CSV for `chart.py series`.
 
-## Mermaid, done right
+## Mermaid, only when structure is the point
 
-GitHub renders Mermaid inline. Diagrams drawn well are some of the strongest backend visuals, and drawn badly they're noise:
+GitHub renders Mermaid inline, but a diagram costs a lot of vertical space. Draw one only when the change is about structure the prose can't carry: a cycle, an interleaving, or a topology that changed. If the text already makes the point, the diagram is noise.
 
+- Use the smallest form. A deadlock is a wait-for loop with 3 nodes and 3 labelled edges. It is not a sequence diagram of every message.
+- Usually draw only the broken state. If the fix removes an edge, say so in one sentence instead of drawing the normal flow.
 - Draw the **real** participants and messages (`API`, `orders_repo`, `Postgres`), never `Service A → Service B`.
-- Put the before and after diagrams next to each other with one caption: "main: one lookup per order; this branch: one batched lookup".
 - Keep each diagram under about 12 nodes. If it needs more, it's two diagrams.
 - Mark what changed with a note or `%% new` and say it in the caption. Mermaid styling is limited, so the caption does the pointing.
 
 ```mermaid
-sequenceDiagram
-    participant API
-    participant DB as Postgres
-    API->>DB: SELECT orders LIMIT 20
-    Note over API,DB: this branch: one round trip instead of 20
-    API->>DB: SELECT customers WHERE id = ANY($1)
+flowchart LR
+    T["terminate<br/>(holds PTY lock)"] -- waits for exit --> C[child]
+    C -- waits for its output to be read --> P["pump<br/>(only reader)"]
+    P -- waits for PTY lock --> T
 ```
+
+That's the whole deadlock in #472, readable in two seconds. The fix is one sentence: "terminate now takes the lock only per signal and per `try_wait`, so the pump keeps reading".
 
 ## What doesn't count as evidence
 

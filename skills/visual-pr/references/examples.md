@@ -66,18 +66,27 @@ was open. Now a pane without the keyboard draws the cursor as a 1 px outline in
 the cell's cursor color, like Terminal, iTerm2, Ghostty, kitty and Alacritty.
 It's a static marker: an unfocused pane schedules zero frames.
 
-Two panes, left focused. On main the right pane has no cursor; on this branch it's hollow.
+## Before and after
+
+**Two panes, left focused.** On main the right pane shows no cursor at all. On this branch it's a hollow outline.
 ![before and after, dark](…/before-after-dark.png)
-![before and after, light](…/before-after-light.png)
 
-4x crops, hollow on top and filled below: a normal cell, an inverse status bar, a double-width glyph, a blank cell.
-![4x crops](…/crops-4x-dark.png)
+**The hard cells, at 4x.** Hollow on top, filled below: a normal cell, an inverse status bar, a double-width glyph, a blank cell.
+<img src="…/crops-4x-dark.png" width="640" alt="4x crops">
 
-Focus moving between the panes at 60 fps (a keystroke every 250 ms keeps the blink off, so only the focus change shows).
+**Focus moving.** 60 fps; a keystroke every 250 ms keeps the blink off, so only the focus change shows.
 ![focus moving](…/focus-dark.gif)
 
-Slowed down, one tile per 8 ms since the change. The top pane's fill drains under a constant outline; the bottom pane's fills back in over 120 ms.
+**Slowed down.** One tile per 8 ms since the change. The top pane's fill drains under a constant outline; the bottom pane's fills back in over 120 ms.
 ![transition in 8 ms steps](…/transition-8ms-steps-dark.png)
+
+<details><summary>Light theme</summary>
+
+![before and after, light](…/before-after-light.png)
+![focus moving, light](…/focus-light.gif)
+</details>
+
+---
 
 ## How
 - **Quadratic, not cubic, ease-out.** I tried the glide's cubic first; at 60 Hz its last three frames repaint a fill under 3% that nobody can see change. Quadratic over the same 120 ms makes every frame visibly different.

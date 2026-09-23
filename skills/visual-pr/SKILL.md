@@ -13,19 +13,25 @@ The reference PRs this skill is distilled from are cristicretu/diri #459, #460, 
 
 ```
 <1–2 paragraphs, plain words: what was wrong or missing, as a user feels it,
- and what is different now. Nothing else above the first image.>
+ and what is different now. Nothing else above the first figure.>
 
-<caption: the input, then what to watch>
-![...](before/after still)
+## Before and after          (or name what is shown: "Hovering a session")
 
-<caption>
-![...](GIF of the real interaction)
+**Cross-project hover.** <caption: the input, what differs, where to look>
 
-<caption: "slowed down, one tile per 8 ms; top row loses focus, bottom gains it">
-![...](frame strip or slow-motion GIF)
+| main | this branch |
+|---|---|
+| <img src="…/main-dark.png" alt="…"> | <img src="…/branch-dark.png" alt="…"> |
 
-<caption>
-![...](edge cases: 4x crops, light + dark, the awkward inputs)
+**Moving the pointer.** <caption>
+![…](one composited main|branch GIF)
+
+**Slowed down.** <caption: "one tile per 8 ms; top row loses focus, bottom gains it">
+![…](frame strip)
+
+<details><summary>Light theme</summary> …same table… </details>
+
+---
 
 ## How            (the decisions that aren't obvious, and what you tried and dropped)
 ## Verification   (real numbers and commands; paste results, not claims)
@@ -35,11 +41,28 @@ The reference PRs this skill is distilled from are cristicretu/diri #459, #460, 
 Rules for each part:
 
 1. **Summary (max 2 paragraphs).** Write it the way you'd explain the change to a colleague at their desk. Name the concrete symptom ("under a slow drag the text sat still for 15 px of finger travel and then jumped"), not a category ("improves scrolling"). If you checked the premise before building and it turned out weaker than expected, say so here. Being honest about that earns more trust than anything else in the PR. No headers, no bullets, no file names. Hard cap: **120 words across both paragraphs**. Count them. Write for someone who hasn't read the issue or the code: say what a user saw and what they see now. Internal names (lock types, function names, error codes) go in How, unless one of them is the symptom itself.
-2. **Visuals, each with a caption.** Before every image, write one line that tells the reviewer what they are looking at and what changes between states: the input that was replayed, what differs across panels, and where to look. The caption's job is to explain the state change so the image doesn't have to be decoded. See "Captions" below.
+2. **Visuals, as figures.** Group them under one heading straight after the summary. Each figure gets a **bold 2–5 word title**, then one caption sentence saying what input was replayed, what differs, and where to look, then the media. The caption explains the state change so the image doesn't have to be decoded. See "Captions" and "Layout" below.
 3. **Details, after the visuals.** Use only the sections that add something. How covers the non-obvious decisions and the alternatives you rejected, with the reason for each. Verification gives measured results. Not in this PR marks the scope. If the details run long, put Verification inside `<details><summary>Verification</summary>…</details>` so the page stays scannable.
 4. **Optional sections** that earn their place when they apply: *Review first* (the 2–4 spots where you're least sure, which also tells the reviewer where to start), *Merge notes* (conflicts with open PRs), and *Tests changed, and why* (every existing test you modified, with the reason).
 
 Length. The reference PRs run to about 1,300 words, which is too long. Aim for a summary under 120 words, captions of one sentence, and bullets of one or two lines. Cut any sentence that repeats what an image already shows. Keep the numbers and the rejected alternatives, because those are the parts reviewers can't get anywhere else.
+
+## Every visual has to earn its place
+
+Before adding a visual, write down the reviewer question it answers ("does the naive fix also work?", "does the easing overshoot?"). If you can't, cut it. If deleting it loses nothing the text already says, delete it. Two strong figures beat six adequate ones.
+
+- A **diagram** is only for structure that prose handles badly: a cycle (a deadlock is a 3-node wait-for loop, not a 10-message sequence diagram), a race interleaving, or a topology that changed. Use the smallest form that shows it. Don't draw an "after" diagram when the fix is "that edge is gone". Say it in one sentence.
+- **Raw output** (`ps`, logs, EXPLAIN) goes in only when a claim rests on it, trimmed to the lines that matter, usually inline or folded.
+- A **variant** that repeats a point (the light theme when dark already shows it, a second device) goes in a `<details>` block, unless the variant is the point.
+
+## Layout: figures, not pasted images
+
+- **Pairs go in a table.** Column headers replace the burned-in labels, and the images line up. `| main | this branch |`, one row per state or theme, with a first label column if there are several rows. Upload the two panels as separate images for this. It suits narrow subjects (a sidebar, a phone screen, a component, a crop), since each column renders about 440 px wide.
+- **Wide subjects** (a full window, a terminal, a chart) get one stacked composite at full width. A table would shrink them until they're unreadable.
+- **Motion comparisons stay one composited GIF.** Two GIFs in two cells don't start in sync.
+- **Never two images in a row with no text between them**, except inside a table.
+- A `---` between the figures and `## How` separates what to look at from what to read.
+- Use `<img src="…" width="420">` when an image renders larger than its information deserves (a small crop captured at 2x).
 
 ## Captions that explain the state change
 
