@@ -58,6 +58,7 @@ Before adding a visual, write down the reviewer question it answers ("does the n
 ## Layout: figures, not pasted images
 
 - **Pairs go in a table.** Column headers replace the burned-in labels, and the images line up. `| main | this branch |`, one row per state or theme, with a first label column if there are several rows. Upload the two panels as separate images for this. It suits narrow subjects (a sidebar, a phone screen, a component, a crop), since each column renders about 440 px wide.
+- **Several items described by the same attributes get a table, not bullets.** Examples: three or more flakes with root cause and fix, endpoints with before/after latency, themes with contrast ratios. If you catch yourself writing the same sentence shape three times, it's a table.
 - **Wide subjects** (a full window, a terminal, a chart) get one stacked composite at full width. A table would shrink them until they're unreadable.
 - **Motion comparisons stay one composited GIF.** Two GIFs in two cells don't start in sync.
 - **Never two images in a row with no text between them**, except inside a table.
